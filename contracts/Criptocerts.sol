@@ -1,4 +1,4 @@
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.21;
 
 contract Criptocerts{
     /*------ Data Models ------*/
@@ -48,9 +48,9 @@ contract Criptocerts{
     /*------ Events ------*/
 
     // Emmits events in order to log the operations performed in the system
-    // event LogAddedIssuer(address issuingAccount, uint issuerId, string issuerName);
-    // event LogAddedCertificate(address issuingAccount, uint certificateId, string certificateName, string certificateDescription);
-    // event LogIssuedCertification(address issuingAccount, address recipientAddress, bytes digitalSignature, uint certificationId);    
+    event LogAddedIssuer(address issuingAccount, uint issuerId, string issuerName);
+    event LogAddedCertificate(address issuingAccount, uint certificateId, string certificateName, string certificateDescription);
+    event LogIssuedCertification(address issuingAccount, address recipientAddress, bytes digitalSignature, uint certificationId);    
 
     /*------ Modifiers ------*/
     modifier onlyCertificateIssuer(uint certificateId){
@@ -177,8 +177,8 @@ contract Criptocerts{
         // Stores new valid emitting address on the accounts mapping structure
         accounts[issuingAccount] = totalIssuers;
 
-        // Logs addition of this issuer      
-        // emit LogAddedIssuer(issuingAccount, totalIssuers, issuerName);
+        // Logs addition of this issuer
+        emit LogAddedIssuer(issuingAccount, totalIssuers, name);
     }
 
     function addCertificate(string name, string description, string criteria)
@@ -198,7 +198,7 @@ contract Criptocerts{
         registeredCertificates[totalCertificates] = newCertificate;
 
         // Log addition of new certificate
-        // emit LogAddedCertificate(ownerInstitutionAddress, totalCertificates, name, description);
+        emit LogAddedCertificate(ownerInstitutionAddress, totalCertificates, name, description);
     }
 
     function issueCertificate(address recipientAddress, uint certificateId, bytes digitalSignature)
@@ -223,28 +223,7 @@ contract Criptocerts{
         issuedCertificateId = totalIssuedCertificates;
 
         // Log certificate issuing
-        // emit LogIssuedCertification(issuingAddress, recipientAddress, digitalSignature, totalIssuedCertificates);
-    }
-
-    // Verification function draft - not working yet
-    function verifyCertificate(uint issuingId, bytes calculatedHash)
-      public
-      onlyValidIssuedCertification(issuingId)
-      view
-      returns (bool validCertificate)
-    {
-        // Recovers the issued certificate object from the mapping structure
-        IssuedCertificate memory certificate = issuedCertificates[issuingId];
-
-        // Recovers digital signature from the issued certificate object
-        bytes memory digSignature = certificate.digitalSignature;
-
-        // @TODO: It is still necessary to implement the digital signature
-        // verification.
-        if(keccak256(digSignature) == keccak256(calculatedHash))
-            return true;
-        else
-            return false;
+        emit LogIssuedCertification(issuingAddress, recipientAddress, digitalSignature, totalIssuedCertificates);
     }
 
     function recoverAddr(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s)
